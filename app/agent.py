@@ -75,7 +75,7 @@ class WebChatAssistant(object):
         return initialize_agent(
             self.tools,
             self.llm,
-            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
             memory=self.memory,
             verbose=True,
             max_iterations=10
