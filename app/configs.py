@@ -23,6 +23,28 @@ class Settings(BaseSettings):
     PROMPT_CHUNK_SIZE_LIMIT = 600
     OPENAI_MODEL = OpenAIModel()
 
+    model_cost_mapping = {
+        "gpt-4": 0.03,
+        "gpt-4-0314": 0.03,
+        "gpt-4-completion": 0.06,
+        "gpt-4-0314-completion": 0.06,
+        "gpt-4-32k": 0.06,
+        "gpt-4-32k-0314": 0.06,
+        "gpt-4-32k-completion": 0.12,
+        "gpt-4-32k-0314-completion": 0.12,
+        "gpt-3.5-turbo": 0.002,
+        "gpt-3.5-turbo-0301": 0.002,
+        "text-ada-001": 0.0004,
+        "ada": 0.0004,
+        "text-babbage-001": 0.0005,
+        "babbage": 0.0005,
+        "text-curie-001": 0.002,
+        "curie": 0.002,
+        "text-davinci-003": 0.02,
+        "text-davinci-002": 0.02,
+        "code-davinci-002": 0.02,
+    }
+
     class Config:
         # Place your .env file under this path
         env_file = ".env"

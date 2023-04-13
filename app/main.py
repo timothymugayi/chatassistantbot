@@ -1,3 +1,5 @@
+from langchain.agents import ZeroShotAgent
+
 from app.agent import WebChatAssistant
 from app.configs import settings
 from app.storage import WebDataExtractor
@@ -28,8 +30,8 @@ if __name__ == "__main__":
                 query=user_input,
                 company_name=settings.COMPANY_NAME,
                 company_email=settings.COMPANY_EMAIL)
-            response = str(assistant.agent.run(agent_prompt)).strip()
-            output_response(response)
+            assistant.agent.run(agent_prompt)
+            # output_response(response)
         except ValueError as e:
             response = str(e)
             response_prefix = "Could not parse LLM output: `"

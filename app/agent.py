@@ -1,11 +1,37 @@
+from typing import Callable, Union, Awaitable, Any
+
 from langchain import PromptTemplate
 from langchain.agents import initialize_agent, Tool, AgentType, AgentExecutor
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.chains.conversation.memory import ConversationBufferMemory
-from llama_index import QueryMode
+from langchain.callbacks.base import AsyncCallbackManager, AsyncCallbackHandler, CallbackManager
 from langchain.llms import OpenAI
+from llama_index import QueryMode
 
 from app.configs import settings
 from app.storage import BaseDataSource
+
+
+# Sender = Callable[[Union[str, bytes]], Awaitable[None]]
+#
+
+class Sender:
+    async def __call__(self, message):
+        print(message)
+
+
+class AsyncStreamCallbackHandler(AsyncCallbackHandler):
+    """Callback handler for streaming, inheritance from AsyncCallbackHandler."""
+    def __init__(self, send: Sender):
+        super().__init__()
+        self.send = send
+
+    async def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
+        """Rewrite on_llm_new_token to send token to client."""
+        await self.send(f"------>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>data: {token}\n\n")
+
+
+
 
 
 class WebChatAssistant(object):
@@ -28,8 +54,11 @@ class WebChatAssistant(object):
             raise TypeError("data_source must be an instance of BaseDataSource")
         self._index = data_source.index()
         self.llm = OpenAI(
+            streaming=True,
             model_name=settings.OPENAI_MODEL.name,
-            temperature=settings.OPENAI_MODEL.temperature
+            temperature=settings.OPENAI_MODEL.temperature,
+            # callback_manager=AsyncCallbackManager([AsyncStreamCallbackHandler(Sender())]),
+            callback_manager=CallbackManager([StreamingStdOutCallbackHandler()])
         )
         self.tools = [
             Tool(
@@ -39,6 +68,7 @@ class WebChatAssistant(object):
                 useful for when you want to answer questions from Website Index. Always, 
                 you must try the index first, only answer based this Website Index
                 """,
+                callback_manager=CallbackManager([StreamingStdOutCallbackHandler()])
             )
         ]
 
@@ -75,10 +105,11 @@ class WebChatAssistant(object):
         return initialize_agent(
             self.tools,
             self.llm,
-            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
             memory=self.memory,
             verbose=True,
-            max_iterations=10
+            max_iterations=10,
+            callback_manager=CallbackManager([StreamingStdOutCallbackHandler()])
         )
 
     @property
@@ -86,7 +117,7 @@ class WebChatAssistant(object):
         return PromptTemplate(
             template="""
             You are a personal assistant for {company_name} company your job is to answer questions. 
-            Use only context Website Index to provide answers.
+            Use only context Website Index to provide a conversational answer.
             Do not provide any answers that deviate from your tools documents.
             If you don't know the answer, just say "Hmm, Im not sure please contact customer support at {company_email} 
             for further assistance." Don't try to make up an answer.:

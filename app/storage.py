@@ -9,6 +9,8 @@ from abc import ABC, abstractmethod
 
 from bs4 import BeautifulSoup
 from langchain import OpenAI
+from langchain.callbacks import CallbackManager
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from llama_index import (
     download_loader,
     PromptHelper,
@@ -43,6 +45,10 @@ class BaseDataSource(ABC):
         Returns:
             A string containing the cached index data, or None if the index is not cached.
         """
+
+# call_manager = CallbackManager(
+#     [StreamingStdOutCallbackHandler()]
+# )
 
 
 class WebDataExtractor(BaseDataSource):
@@ -115,7 +121,8 @@ class WebDataExtractor(BaseDataSource):
             llm=OpenAI(
                 model_name=settings.OPENAI_MODEL.name,
                 temperature=settings.OPENAI_MODEL.temperature,
-                max_tokens=settings.PROMPT_NUM_OUTPUTS
+                max_tokens=settings.PROMPT_NUM_OUTPUTS,
+                callback_manager=CallbackManager([StreamingStdOutCallbackHandler()])
             )
         )
         context = ServiceContext.from_defaults(llm_predictor=llm_predictor, prompt_helper=prompt_helper)
