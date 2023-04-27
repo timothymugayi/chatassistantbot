@@ -77,7 +77,7 @@ class WebChatAssistant(object):
             self.llm,
             agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
             memory=self.memory,
-            verbose=True,
+            verbose=settings.DEBUG,
             max_iterations=10
         )
 

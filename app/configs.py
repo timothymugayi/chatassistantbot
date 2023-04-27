@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     PROMPT_MAX_CHUNK_OVERLAP = 20
     PROMPT_CHUNK_SIZE_LIMIT = 600
     OPENAI_MODEL = OpenAIModel()
+    DEBUG = False
 
     class Config:
         # Place your .env file under this path

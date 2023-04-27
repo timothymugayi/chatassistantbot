@@ -47,7 +47,14 @@ class BaseDataSource(ABC):
 
 class WebDataExtractor(BaseDataSource):
 
-    def __init__(self, root_url: str, urls: List[str], vector_index_file: Optional[str] = "data.json") -> None:
+    def __init__(self, root_url: str, urls: List[str], index_file: Optional[str] = "data.json") -> None:
+        """
+        WebDataExtractor Constructor initialize class
+        Args:
+            root_url: Root url of site to traverse
+            urls: fallback urls if no sub child urls in parent root url found
+            index_file: name of index file
+        """
         if not root_url:
             raise ValueError("root url should be defined")
         if not urls:
@@ -59,7 +66,7 @@ class WebDataExtractor(BaseDataSource):
             self.urls = urls
         else:
             self.urls = child_urls
-        self.vector_index_file = vector_index_file
+        self.index_file = index_file
 
     def __collect_urls(self, root_url: str, visited: Set = None, max_urls: int = 20) -> Set:
         # Create an empty set to store the collected URLs
@@ -120,7 +127,7 @@ class WebDataExtractor(BaseDataSource):
         )
         context = ServiceContext.from_defaults(llm_predictor=llm_predictor, prompt_helper=prompt_helper)
         # check if theres already an indexed file
-        if not self.get_cached_index(self.vector_index_file):
+        if not self.get_cached_index(self.index_file):
             ReadabilityWebPageReader = download_loader("ReadabilityWebPageReader")
             loader = ReadabilityWebPageReader()
             documents = []
@@ -130,14 +137,14 @@ class WebDataExtractor(BaseDataSource):
             # previous llama_index versions the way we initialize any vector index class was via
             # the constructor this as recently change as of version 0.5.10
             index = GPTListIndex.from_documents(documents, service_context=context)
-            index.save_to_disk(self.vector_index_file)
+            index.save_to_disk(self.index_file)
             return index
         else:
-            index = GPTListIndex.load_from_disk(self.vector_index_file, service_context=context)
+            index = GPTListIndex.load_from_disk(self.index_file, service_context=context)
             return index
 
     def remove_index_cache(self):
-        remove_file(self.vector_index_file)
+        remove_file(self.index_file)
 
     def get_cached_index(self, name: str) -> Union[str, None]:
         """

@@ -20,7 +20,8 @@ if __name__ == "__main__":
     while True:
         try:
             if not init_conversation:
-                user_input = input("Hi Am Reldyn Buddy, Ask your question...")
+                user_input = input("Hi Am {} Buddy, Ask your question...".format(
+                    settings.COMPANY_NAME))
                 init_conversation = True
             else:
                 user_input = input("Please ask your question...")
